@@ -1,0 +1,160 @@
+#include <iostream>
+#include <vector>
+#include "opencv2/opencv.hpp"
+#include <algorithm>
+#include <cmath>
+
+using namespace std;
+using namespace cv;
+
+
+
+int mycompare(const pair<float, float> &p1, const pair<float, float> &p2)
+{
+	return p1.first < p2.first;
+}
+
+int main(int argc, char** argv)
+{
+
+	Mat src = imread("shelve1.jpg");
+	Mat img1;
+	Mat img2;
+
+
+
+	resize(src, img1, Size(0, 0), 0.12, 0.12);
+	//cvtColor(src, img1, CV_BGR2GRAY);
+	GaussianBlur(img1, img1, Size(3, 3), 0, 0);
+	imshow("shelve", img1);
+	Canny(img1, img2, 50, 200, 3);
+	imshow("canny", img2);
+
+	//vector<Vec4i> lines;//定义一个矢量结构lines用于存放得到的线段矢量集合  
+	//HoughLinesP(img2, lines, 1, CV_PI / 180, 80, 30, 10);
+	//cvtColor(img2, img2, CV_GRAY2BGR);
+
+	//for (size_t i = 0; i < lines.size(); i++)
+	//{
+	//	Vec4i l = lines[i];
+	//	//if(l[0]- l[2]>-20 && l[0] - l[2]<20)
+	//	line(img2, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0, 0, 255), 1, CV_AA);
+	//}
+	//imshow("line", img2);
+
+	vector<Vec2f> lines;//定义一个矢量结构lines用于存放得到的线段矢量集合  
+	HoughLines(img2, lines, 1, CV_PI / 180, 150, 0, 0);
+	cvtColor(img2, img2, CV_GRAY2BGR);
+	//cout << lines.size() << endl;
+
+	vector<pair<float, float>> horizontal_lines;
+	pair<float, float> pointpair;
+
+	for (size_t i = 0; i < lines.size(); i++)
+	{
+		float rho = lines[i][0], theta = lines[i][1];
+		if ((theta<100 * CV_PI / 180 && theta>80 * CV_PI / 180))
+		{
+			pointpair.first = rho;
+			pointpair.second = theta;
+			horizontal_lines.push_back(pointpair);
+			Point pt1, pt2;
+			double a = cos(theta), b = sin(theta);
+			double x0 = a*rho, y0 = b*rho;
+			pt1.x = cvRound(x0 + 1000 * (-b));
+			pt1.y = cvRound(y0 + 1000 * (a));
+			pt2.x = cvRound(x0 - 1000 * (-b));
+			pt2.y = cvRound(y0 - 1000 * (a));
+			line(img2, pt1, pt2, Scalar(55, 100, 195), 1, CV_AA);
+
+		}
+
+	}
+
+	sort(horizontal_lines.begin(), horizontal_lines.end(), mycompare);
+	cout << "sort done\n";
+	pair<float, float> lastline = horizontal_lines.at(0);
+	float dis = 0, delta = 0;
+	pair<float, float> edge_up;
+	pair<float, float> edge_down;
+	edge_up.first = 0;
+	edge_up.second = 0;
+	edge_down.first = 0;
+	edge_down.second = 0;
+	int edgeline = 0;
+	for (unsigned int i = 0; i < horizontal_lines.size(); i++)
+	{
+		dis = horizontal_lines.at(i).first - lastline.first;
+		delta = horizontal_lines.at(i).second - lastline.second;
+		if ((dis > 10 && dis < 30) && (delta > -1.5* CV_PI / 180 && delta < 1.5* CV_PI / 180))
+		{
+			float rho = horizontal_lines.at(i).first, theta = horizontal_lines.at(i).second;
+			Point pt1, pt2;
+			double a = cos(theta), b = sin(theta);
+			double x0 = a*rho, y0 = b*rho;
+			pt1.x = cvRound(x0 + 1000 * (-b));
+			pt1.y = cvRound(y0 + 1000 * (a));
+			pt2.x = cvRound(x0 - 1000 * (-b));
+			pt2.y = cvRound(y0 - 1000 * (a));
+			line(img2, pt1, pt2, Scalar(0, 0, 255), 1, CV_AA);
+			//if (edge_down.second == 0)
+			//{
+			if (edge_up.second == 0)
+			{
+				edge_up.first = edge_down.first;
+				edge_up.second = edge_down.second;
+			}
+			edge_down.first = rho;
+			edge_down.second = theta;
+			//}
+			edgeline++;
+			cout << edge_up.first << " " << edge_up.second << " " << edge_down.first << " " << edge_down.second << "\n";
+		}
+		lastline = horizontal_lines.at(i);
+	}
+
+
+	if (edgeline > 0)
+	{
+
+		int corner_x = 0, corner_y = 0;
+		int corner_max = 0;
+		int width = img1.cols;
+		int height = img1.rows;
+		float rho, theta;
+		rho = edge_up.first;
+		theta = edge_up.second;
+		if (theta != 0)
+		{
+			cout << theta << "\n";
+			if (theta<CV_PI / 2)
+				corner_max = cvRound((rho - width *cos(theta)) / sin(theta));
+			else
+				corner_max = cvRound(rho / sin(theta));
+			if (corner_max > corner_y)
+				corner_y = corner_max;
+			cout << corner_max << "\n";
+		}
+		rho = edge_down.first;
+		theta = edge_down.second;
+		if (theta != 0)
+		{
+			if (theta<CV_PI / 2)
+				corner_max = cvRound(rho / sin(theta));
+			else
+				corner_max = cvRound((rho - width *cos(theta)) / sin(theta));
+			if (corner_max > corner_y)
+				height = corner_max - corner_y;
+		}
+
+		Mat imageROI;
+		imageROI = img1(Rect(corner_x, corner_y, width, height));
+		imshow("roi", imageROI);
+	}
+
+	imshow("line", img2);
+	cout << "end\n";
+	waitKey(0);
+
+	return 0;
+}
