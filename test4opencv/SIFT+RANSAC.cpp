@@ -1,18 +1,10 @@
-#include "opencv2/core/core.hpp"  
-#include "highgui.h"  
-#include "opencv2/imgproc/imgproc.hpp"  
-#include "opencv2/features2d/features2d.hpp"  
-#include "opencv2/nonfree/nonfree.hpp"  
-#include "opencv2/legacy/legacy.hpp"  
+#include"SIFT+RANSAC.h"
 
-using namespace cv;
-using namespace std;
-
-int main(int argc, char** argv)
+void SIFTCompare(Mat& src,Mat& target)
 {
 	//´ýÆ¥ÅäµÄÁ½·ùÍ¼Ïñ
-	Mat img1 = imread("car2.jpg", 0);
-	Mat img2 = imread("car1.jpg", 0);
+	Mat img1 = src;
+	Mat img2 = target;
 
 	SIFT sift1(200, 3, 0.05, 10, 1.6);
 	SIFT sift2(200, 3, 0.05, 10, 1.6);
@@ -102,9 +94,7 @@ int main(int argc, char** argv)
 	Mat img_RR_matches;
 	drawMatches(img1, RR_keypoint01, img2, RR_keypoint02, RR_matches, img_RR_matches);
 	imshow("Ïû³ýÎóÆ¥Åäµãºó", img_RR_matches);
+	cout << index << " matches\n";
 
 
-	waitKey(0);
-
-	return 0;
 }

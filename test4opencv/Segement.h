@@ -5,6 +5,7 @@
 #include "opencv2/opencv.hpp"
 #include <algorithm>
 #include <cmath>
+#include <math.h>
 
 using namespace std;
 using namespace cv;
@@ -13,7 +14,7 @@ int paircompare(const pair<float, float> &p1, const pair<float, float> &p2);
 //比较霍夫检测得到的线，按rho从小到大排序，用于sort的自定义排序
 //rho=pair.first theta=pair.second
 
-void segement(Mat &src, Mat &dst);
+void segement(Mat &src, Mat &dst, int* range);
 //检测近似水平的直线，将间隔在一定范围的判定为书架层，分割层间的图像用于后续处理
 //输入原图 通过reference输出分割图
 

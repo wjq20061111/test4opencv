@@ -24,12 +24,18 @@
     <ClCompile Include="Segement.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="SIFT+RANSAC.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mytool.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Segement.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SIFT+RANSAC.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -7,7 +7,7 @@ int paircompare(const pair<float, float> &p1, const pair<float, float> &p2)
 	return p1.first < p2.first;
 }
 
-void segement(Mat &src, Mat &dst)
+void segement(Mat &src, Mat &dst, int* range)
 //检测近似水平的直线，将间隔在一定范围的判定为书架层，分割层间的图像用于后续处理
 //输入原图 通过reference输出分割图
 {
@@ -78,7 +78,7 @@ void segement(Mat &src, Mat &dst)
 
 		int width = src.cols;
 		int height = src.rows;
-		int range[4]{};
+		//int range[4]{};
 		calBorder(width, height, edge, range);//计算需截取部分
 		//Mat imageROI;
 		dst = src(Rect(range[0], range[1], range[2] - range[0], range[3] - range[1]));//roi截取，分割完毕
@@ -92,16 +92,42 @@ void spineSegement(Mat &src, vector<Mat> &dst)
 //输入单层书架图 通过reference输出分割容器
 {
 	Mat imgCanny;
-	GaussCanny(src, imgCanny, 3);//高斯滤波+canny边缘提取，滤波器大小Size(3,3)
+	GaussCanny(src, imgCanny, 7);//高斯滤波+canny边缘提取，滤波器大小Size(3,3)
 
 	vector<pair<float, float>> vertical_lines;//筛选出的竖直线
-	lineFilterVer(imgCanny, vertical_lines, 110);//筛选竖直线，阈值110
+	lineFilterVer(imgCanny, vertical_lines, 115);//筛选竖直线，阈值110
 
 	//imshow("canny", imgCanny);
 
-	sort(vertical_lines.begin(), vertical_lines.end(), paircompare);//有问题的排序，接近垂直的线有问题
-	//cvtColor(imgCanny, imgCanny, CV_GRAY2BGR);
+	for (int i = 0; i < vertical_lines.size(); i++)//修正负rho值
+	{
+		if (vertical_lines.at(i).second > CV_PI / 2)
+		{
+			vertical_lines.at(i).second = vertical_lines.at(i).second - CV_PI;
+			vertical_lines.at(i).first = -vertical_lines.at(i).first;
+		}
+	}
+
+	sort(vertical_lines.begin(), vertical_lines.end(), paircompare);//按rho排序
+
 	pair<float, float> lastline = vertical_lines.at(0);//上条线
+	vector<pair<float, float>> filtVerticalLines;//筛选竖直线
+	filtVerticalLines.push_back(vertical_lines.at(0));
+	for (int i = 0;i<vertical_lines.size();i++)
+	{
+		if ((fabs(vertical_lines.at(i).first - lastline.first) < 10) &&
+			(fabs(vertical_lines.at(i).second - lastline.second) < 0.02))
+		{
+		}
+		else
+		{
+			filtVerticalLines.push_back(vertical_lines.at(i));
+		}
+		lastline = vertical_lines.at(i);
+	}
+
+	//cvtColor(imgCanny, imgCanny, CV_GRAY2BGR);
+	lastline = filtVerticalLines.at(0);//上条线
 
 	vector<pair<float, float>> edge;//垂直边缘，分别表示左右
 	//rho=pair.first theta=pair.second
@@ -117,36 +143,38 @@ void spineSegement(Mat &src, vector<Mat> &dst)
 	Mat imagesei;//分割后的书脊(未校准)
 	//char name[10];
 	Mat imageper;//分割后的书脊(校准)
-	for (unsigned int i = 0; i < vertical_lines.size(); i++)
+	for (unsigned int i = 0; i < filtVerticalLines.size(); i++)
 	{
-		//垂直线的rho有正负，计算在上边缘的投影距离
-		calCross(vertical_lines.at(i).first, vertical_lines.at(i).second, 0, CV_PI / 2, crosspoint);
+		//垂直线的rho有正负，计算在中间的投影距离
+		calCross(filtVerticalLines.at(i).first, filtVerticalLines.at(i).second, height/2, CV_PI / 2, crosspoint);
 		dis = crosspoint[0];//上边缘交点
-		calCross(lastline.first, lastline.second, 0, CV_PI / 2, crosspoint);
+		calCross(lastline.first, lastline.second, height/2, CV_PI / 2, crosspoint);
 		dis = dis - crosspoint[0];//另一个上边缘交点
-
+		//dis = filtVerticalLines.at(i).first - lastline.first;
 		if (dis < 0)//保证大于0
 			dis = -dis;
 
-		delta = vertical_lines.at(i).second - lastline.second;//角度会超过180
+		delta = filtVerticalLines.at(i).second - lastline.second;//角度会超过180
 		if (delta > CV_PI / 2)//修正为±90deg之内
 			delta = delta - CV_PI;
 		if (delta < -CV_PI / 2)
 			delta = delta + CV_PI;
 
-		if ((dis > 5 && dis < 70) && (delta > -2.5* CV_PI / 180 && delta < 2.5* CV_PI / 180))
+		//float rho = filtVerticalLines.at(i).first, theta = filtVerticalLines.at(i).second;
+		//drawHoughLine(rho, theta, imgCanny);//绘图用
+
+		if ((dis > 10 && dis < 90) && (delta > -3* CV_PI / 180 && delta < 3* CV_PI / 180))
 			//距离间隔在一定范围内(5-70pix)同时平行度良好（±2.5deg）认为是书边缘
 		{
-			//float rho = vertical_lines.at(i).first, theta = vertical_lines.at(i).second;
-			//drawHoughLine(rho, theta, imgCanny);//绘图用
+			//float rho = filtVerticalLines.at(i).first, theta = filtVerticalLines.at(i).second;
+			//drawHoughLine(rho, theta, imgCanny,255,255,0);//绘图用
+
 			edge.at(0) = lastline;
-			edge.at(1) = vertical_lines.at(i);
+			edge.at(1) = filtVerticalLines.at(i);
 
 			calBorder(width, height, edge, range);//计算需截取部分
 			imagesei = src(Rect(range[0], range[1], range[2] - range[0], range[3] - range[1]));
 			//截取图像，其中range[0]，range[1]为截取的坐标原点，后校准要用
-			//sprintf_s(name, "%d", i);			
-			//imshow(name, imagesei);
 
 			calPerspect(width, height, range[0], range[1], edge, imagesei, imageper);//透视校准计算，变成正视图
 			//imshow("1", imageper);
@@ -154,7 +182,7 @@ void spineSegement(Mat &src, vector<Mat> &dst)
 
 			edgeline++;
 		}
-		lastline = vertical_lines.at(i);
+		lastline = filtVerticalLines.at(i);
 	}
 
 	//imshow("seg2", imgCanny);
@@ -228,11 +256,11 @@ void lineFilterVer(Mat &src, vector<pair<float, float>> &vertical_lines, int thr
 		{
 			linepair = make_pair(rho, theta);
 			vertical_lines.push_back(linepair);//记录线
-			//drawHoughLine(rho, theta, src);
+			//drawHoughLine(rho, theta, src,255,150,100);
 		}
 	}
 	cout << "filter VerLine " << vertical_lines.size() << " lines\n";
-
+	//imshow("vl", src);
 }
 
 void calCross(double rho1, double theta1, double rho2, double theta2, int* crosspoint)
