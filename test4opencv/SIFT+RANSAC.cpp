@@ -16,6 +16,7 @@ void SIFTCompare(Mat& src,Mat& target)
 	sift1(img1, mascara, key_points1, descriptors1);
 	sift2(img2, mascara, key_points2, descriptors2);
 
+	cout << key_points1.size() << " " << key_points2.size() << "\n";
 
 	Mat output_img;
 
@@ -26,8 +27,18 @@ void SIFTCompare(Mat& src,Mat& target)
 							  //以特征点为中心画圆，圆的半径表示特征点的大小，直线表示特征点的方向  
 		DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
-	namedWindow("SIFT");
-	imshow("SIFT", output_img);
+	//namedWindow("SIFT1");
+	//imshow("SIFT1", output_img);
+
+	drawKeypoints(img2,     //输入图像  
+		key_points2,      //特征点矢量  
+		output_img,      //输出图像  
+		Scalar::all(-1),      //绘制特征点的颜色，为随机  
+							  //以特征点为中心画圆，圆的半径表示特征点的大小，直线表示特征点的方向  
+		DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+
+	//namedWindow("SIFT2");
+	//imshow("SIFT2", output_img);
 
 
 	//实例化暴力匹配器——BruteForceMatcher  
@@ -38,21 +49,25 @@ void SIFTCompare(Mat& src,Mat& target)
 	matcher.match(descriptors1, descriptors2, matches);
 
 	//提取出前30个最佳匹配结果  
-	std::nth_element(matches.begin(),     //匹配器算子的初始位置  
-		matches.begin() + 99,     // 排序的数量  
-		matches.end());       // 结束位置  
-							  //剔除掉其余的匹配结果  
-	matches.erase(matches.begin() + 100, matches.end());
+	if (matches.size() > 100)
+	{
+		std::nth_element(matches.begin(),     //匹配器算子的初始位置  
+			matches.begin() + 99,     // 排序的数量  
+			matches.end());       // 结束位置  
+								  //剔除掉其余的匹配结果  
+		matches.erase(matches.begin() + 100, matches.end());
+	}
 
-	namedWindow("SIFT_matches");
+
+	//namedWindow("SIFT_matches");
 	Mat img_matches;
 	//在输出图像中绘制匹配结果  
-	drawMatches(img1, key_points1,         //第一幅图像和它的特征点  
-		img2, key_points2,      //第二幅图像和它的特征点  
-		matches,       //匹配器算子  
-		img_matches,      //匹配输出图像  
-		Scalar::all(-1));     //用直线连接两幅图像中的特征点  
-	imshow("SIFT_matches", img_matches);
+	//drawMatches(img1, key_points1,         //第一幅图像和它的特征点  
+	//	img2, key_points2,      //第二幅图像和它的特征点  
+	//	matches,       //匹配器算子  
+	//	img_matches,      //匹配输出图像  
+	//	Scalar::all(-1));     //用直线连接两幅图像中的特征点  
+	//imshow("SIFT_matches", img_matches);
 
 	vector<KeyPoint> R_keypoint01, R_keypoint02;
 	for (size_t i = 0; i<matches.size(); i++)
@@ -93,7 +108,7 @@ void SIFTCompare(Mat& src,Mat& target)
 	}
 	Mat img_RR_matches;
 	drawMatches(img1, RR_keypoint01, img2, RR_keypoint02, RR_matches, img_RR_matches);
-	imshow("消除误匹配点后", img_RR_matches);
+	//imshow("消除误匹配点后", img_RR_matches);
 	cout << index << " matches\n";
 
 

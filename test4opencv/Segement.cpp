@@ -95,7 +95,7 @@ void spineSegement(Mat &src, vector<Mat> &dst)
 	GaussCanny(src, imgCanny, 7);//高斯滤波+canny边缘提取，滤波器大小Size(3,3)
 
 	vector<pair<float, float>> vertical_lines;//筛选出的竖直线
-	lineFilterVer(imgCanny, vertical_lines, 115);//筛选竖直线，阈值110
+	lineFilterVer(imgCanny, vertical_lines, 140);//筛选竖直线，阈值110
 
 	//imshow("canny", imgCanny);
 
@@ -160,14 +160,14 @@ void spineSegement(Mat &src, vector<Mat> &dst)
 		if (delta < -CV_PI / 2)
 			delta = delta + CV_PI;
 
-		//float rho = filtVerticalLines.at(i).first, theta = filtVerticalLines.at(i).second;
-		//drawHoughLine(rho, theta, imgCanny);//绘图用
+		float rho = filtVerticalLines.at(i).first, theta = filtVerticalLines.at(i).second;
+		drawHoughLine(rho, theta, imgCanny);//绘图用
 
 		if ((dis > 10 && dis < 90) && (delta > -3* CV_PI / 180 && delta < 3* CV_PI / 180))
 			//距离间隔在一定范围内(5-70pix)同时平行度良好（±2.5deg）认为是书边缘
 		{
-			//float rho = filtVerticalLines.at(i).first, theta = filtVerticalLines.at(i).second;
-			//drawHoughLine(rho, theta, imgCanny,255,255,0);//绘图用
+			float rho = filtVerticalLines.at(i).first, theta = filtVerticalLines.at(i).second;
+			drawHoughLine(rho, theta, imgCanny,255,255,0);//绘图用
 
 			edge.at(0) = lastline;
 			edge.at(1) = filtVerticalLines.at(i);
@@ -185,7 +185,7 @@ void spineSegement(Mat &src, vector<Mat> &dst)
 		lastline = filtVerticalLines.at(i);
 	}
 
-	//imshow("seg2", imgCanny);
+	imshow("seg2", imgCanny);
 }
 
 void drawHoughLine(float rho , float theta , Mat &obj, double R,double G,double B)
@@ -246,7 +246,7 @@ void lineFilterVer(Mat &src, vector<pair<float, float>> &vertical_lines, int thr
 	HoughLines(src, lines, 1, CV_PI / 180, threshold, 0, 0);//threshold=110 垂直线短一些
 	//cout << "find " << lines.size() << " lines\n";
 
-	//cvtColor(src, src, CV_GRAY2BGR);
+	cvtColor(src, src, CV_GRAY2BGR);
 
 	pair<float, float> linepair;
 	for (size_t i = 0; i < lines.size(); i++)
@@ -256,7 +256,7 @@ void lineFilterVer(Mat &src, vector<pair<float, float>> &vertical_lines, int thr
 		{
 			linepair = make_pair(rho, theta);
 			vertical_lines.push_back(linepair);//记录线
-			//drawHoughLine(rho, theta, src,255,150,100);
+			drawHoughLine(rho, theta, src,255,150,100);
 		}
 	}
 	cout << "filter VerLine " << vertical_lines.size() << " lines\n";
