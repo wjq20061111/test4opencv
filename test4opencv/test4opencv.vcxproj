@@ -151,11 +151,13 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mytool.cpp" />
+    <ClCompile Include="ORB.cpp" />
     <ClCompile Include="Segement.cpp" />
     <ClCompile Include="SIFT+RANSAC.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mytool.h" />
+    <ClInclude Include="ORB.h" />
     <ClInclude Include="Segement.h" />
     <ClInclude Include="SIFT+RANSAC.h" />
   </ItemGroup>
