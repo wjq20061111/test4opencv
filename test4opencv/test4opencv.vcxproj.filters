@@ -24,10 +24,16 @@
     <ClCompile Include="Segement.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="SIFT+RANSAC.cpp">
+    <ClCompile Include="ORB.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ORB.cpp">
+    <ClCompile Include="RANSAC.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SIFT.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SURF.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,10 +44,16 @@
     <ClInclude Include="Segement.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="SIFT+RANSAC.h">
+    <ClInclude Include="ORB.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ORB.h">
+    <ClInclude Include="RANSAC.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SIFT.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SURF.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

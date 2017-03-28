@@ -1,4 +1,4 @@
-#include "mytool.h"
+﻿#include "mytool.h"
 
 int drawhistgray(Mat* src)
 {

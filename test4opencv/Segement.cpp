@@ -1,58 +1,61 @@
-#include "Segement.h"
+ï»¿#include "Segement.h"
 
 int paircompare(const pair<float, float> &p1, const pair<float, float> &p2)
-//±È½Ï»ô·ò¼ì²âµÃµ½µÄÏß£¬°´rho´ÓĞ¡µ½´óÅÅĞò£¬ÓÃÓÚsortµÄ×Ô¶¨ÒåÅÅĞò
+//æ¯”è¾ƒéœå¤«æ£€æµ‹å¾—åˆ°çš„çº¿ï¼ŒæŒ‰rhoä»å°åˆ°å¤§æ’åºï¼Œç”¨äºsortçš„è‡ªå®šä¹‰æ’åº
 //rho=pair.first theta=pair.second
 {
 	return p1.first < p2.first;
 }
 
 void segement(Mat &src, Mat &dst, int* range)
-//¼ì²â½üËÆË®Æ½µÄÖ±Ïß£¬½«¼ä¸ôÔÚÒ»¶¨·¶Î§µÄÅĞ¶¨ÎªÊé¼Ü²ã£¬·Ö¸î²ã¼äµÄÍ¼ÏñÓÃÓÚºóĞø´¦Àí
-//ÊäÈëÔ­Í¼ Í¨¹ıreferenceÊä³ö·Ö¸îÍ¼
+//æ£€æµ‹è¿‘ä¼¼æ°´å¹³çš„ç›´çº¿ï¼Œå°†é—´éš”åœ¨ä¸€å®šèŒƒå›´çš„åˆ¤å®šä¸ºä¹¦æ¶å±‚ï¼Œåˆ†å‰²å±‚é—´çš„å›¾åƒç”¨äºåç»­å¤„ç†
+//è¾“å…¥åŸå›¾ é€šè¿‡referenceè¾“å‡ºåˆ†å‰²å›¾
 {
 
 	Mat imgCanny;
-	GaussCanny(src, imgCanny, 3);//¸ßË¹ÂË²¨+canny±ßÔµÌáÈ¡£¬ÂË²¨Æ÷´óĞ¡Size(3,3)
+	GaussCanny(src, imgCanny, 3);//é«˜æ–¯æ»¤æ³¢+cannyè¾¹ç¼˜æå–ï¼Œæ»¤æ³¢å™¨å¤§å°Size(3,3)
 
-	vector<pair<float, float>> horizontal_lines;//É¸Ñ¡³öµÄË®Æ½Ïß
-	lineFilterHor(imgCanny, horizontal_lines, 150);//Ë®Æ½ÏßÉ¸Ñ¡£¬»ô·òãĞÖµ150
+	//imshow("canny", imgCanny);
 
-	if (horizontal_lines.size() > 100)//Ë®Æ½ÏßÌ«¶à£¬µ÷ÕûÂË²¨ÏµÊı
+	vector<pair<float, float>> horizontal_lines;//ç­›é€‰å‡ºçš„æ°´å¹³çº¿
+	lineFilterHor(imgCanny, horizontal_lines, 150);//æ°´å¹³çº¿ç­›é€‰ï¼Œéœå¤«é˜ˆå€¼150
+
+	if (horizontal_lines.size() > 100)//æ°´å¹³çº¿å¤ªå¤šï¼Œè°ƒæ•´æ»¤æ³¢ç³»æ•°
 	{	
 		//cout << "filter failed\n";
-		GaussCanny(src, imgCanny, 7);//try again,ÂË²¨Æ÷´óĞ¡Size(7,7)
-		horizontal_lines.clear();//Çå¿ÕÖ®Ç°É¸Ñ¡µÄÏß
+		GaussCanny(src, imgCanny, 7);//try again,æ»¤æ³¢å™¨å¤§å°Size(7,7)
+		horizontal_lines.clear();//æ¸…ç©ºä¹‹å‰ç­›é€‰çš„çº¿
 		lineFilterHor(imgCanny, horizontal_lines, 150);
 	}
-	if (horizontal_lines.size() > 100)//Ë®Æ½Ïß»¹Ì«¶à£¬Ã»¾ÈÁË
+	if (horizontal_lines.size() > 100)//æ°´å¹³çº¿è¿˜å¤ªå¤šï¼Œæ²¡æ•‘äº†
 	{
 		cout << "filter failed\n";
 		return;
 	}
 
 
-	sort(horizontal_lines.begin(), horizontal_lines.end(), paircompare);//½«É¸Ñ¡³öµÄË®Æ½Ïß´ÓÉÏµ½ÏÂÅÅĞò
+	sort(horizontal_lines.begin(), horizontal_lines.end(), paircompare);//å°†ç­›é€‰å‡ºçš„æ°´å¹³çº¿ä»ä¸Šåˆ°ä¸‹æ’åº
 	//cout << "sort done\n";
 
-	//Ñ¡³ö×îÉÏºÍ×îÏÂ±ßÔµ
+	//é€‰å‡ºæœ€ä¸Šå’Œæœ€ä¸‹è¾¹ç¼˜
 	//cvtColor(imgCanny, imgCanny, CV_GRAY2BGR);
-	pair<float, float> lastline = horizontal_lines.at(0);//ÉÏÌõÏß
-	vector<pair<float, float>> edge;//±ßÔµat(0)ÉÏ±ß½ç at(1)ÏÂ±ß½ç ºóĞø¼ÆËã²»Çø·Ö
+	pair<float, float> lastline = horizontal_lines.at(0);//ä¸Šæ¡çº¿
+	vector<pair<float, float>> edge;//è¾¹ç¼˜at(0)ä¸Šè¾¹ç•Œ at(1)ä¸‹è¾¹ç•Œ åç»­è®¡ç®—ä¸åŒºåˆ†
 	//rho=pair.first theta=pair.second
-	float dis = 0, delta = 0;//ÓëÉÏÌõÏß¾àÀëºÍ¼Ğ½Ç 
-	int edgeline = 0;//¼ì³öÊé¼Ü²ã±ßÏß¶ÔÊıÁ¿
+	float dis = 0, delta = 0;//ä¸ä¸Šæ¡çº¿è·ç¦»å’Œå¤¹è§’ 
+	int edgeline = 0;//æ£€å‡ºä¹¦æ¶å±‚è¾¹çº¿å¯¹æ•°é‡
 	for (unsigned int i = 0; i < horizontal_lines.size(); i++)
 	{
 		dis = horizontal_lines.at(i).first - lastline.first;
 		delta = horizontal_lines.at(i).second - lastline.second;
-		if ((dis > 10 && dis < 30) && (delta > -1.5* CV_PI / 180 && delta < 1.5* CV_PI / 180))
-			//¾àÀë¼ä¸ôÔÚÒ»¶¨·¶Î§ÄÚ£¨10-30pix£©Í¬Ê±Æ½ĞĞ¶ÈÁ¼ºÃ£¨¡À1.5deg£©ÈÏÎªÊÇÊé¼Ü±ßÔµ
+
+		if ((dis > 10 && dis < 40) && (delta > -1.5* CV_PI / 180 && delta < 1.5* CV_PI / 180))
+			//è·ç¦»é—´éš”åœ¨ä¸€å®šèŒƒå›´å†…ï¼ˆ10-30pixï¼‰åŒæ—¶å¹³è¡Œåº¦è‰¯å¥½ï¼ˆÂ±1.5degï¼‰è®¤ä¸ºæ˜¯ä¹¦æ¶è¾¹ç¼˜
 		{
 			//float rho = horizontal_lines.at(i).first, theta = horizontal_lines.at(i).second;
-			//drawHoughLine(rho, theta, imgCanny,0,255);//ÓÃÓÚ»æÍ¼
+			//drawHoughLine(rho, theta, imgCanny, 0, 255);//ç”¨äºç»˜å›¾
 			if (edgeline < 2)
-				//µÚÒ»´Î¼ì²âµ½µÄ×÷ÎªÉÏ±ßÔµ£¬µÚ¶ş´ÎÏÂ±ßÔµ£¬´Ëºó²âµ½µÄ¸²¸ÇÏÂ±ßÔµ£¨¿ÉÄÜÓĞÎÊÌâ£©
+				//ç¬¬ä¸€æ¬¡æ£€æµ‹åˆ°çš„ä½œä¸ºä¸Šè¾¹ç¼˜ï¼Œç¬¬äºŒæ¬¡ä¸‹è¾¹ç¼˜ï¼Œæ­¤åæµ‹åˆ°çš„è¦†ç›–ä¸‹è¾¹ç¼˜ï¼ˆå¯èƒ½æœ‰é—®é¢˜ï¼‰
 			{
 				edge.push_back(horizontal_lines.at(i));
 			}
@@ -66,40 +69,40 @@ void segement(Mat &src, Mat &dst, int* range)
 	}
 	//resize(imgCanny, imgCanny, Size(0, 0), 0.5, 0.5);
 	//imshow("seg1", imgCanny);
-	if (edgeline == 1)//Ö»ÓĞÒ»ÌõÏß½«pair(0,PI/2)×÷±ßÏß
+	if (edgeline == 1)//åªæœ‰ä¸€æ¡çº¿å°†pair(0,PI/2)ä½œè¾¹çº¿
 	{
 		float zero = 0;
 		edge.push_back(make_pair(zero,  CV_PI / 2));
 	}
 
 
-	if (edgeline > 0)//ÖÁÉÙÒ»¸ö±ßÔµ
+	if (edgeline > 0)//è‡³å°‘ä¸€ä¸ªè¾¹ç¼˜
 	{
 
 		int width = src.cols;
 		int height = src.rows;
 		//int range[4]{};
-		calBorder(width, height, edge, range);//¼ÆËãĞè½ØÈ¡²¿·Ö
+		calBorder(width, height, edge, range);//è®¡ç®—éœ€æˆªå–éƒ¨åˆ†
 		//Mat imageROI;
-		dst = src(Rect(range[0], range[1], range[2] - range[0], range[3] - range[1]));//roi½ØÈ¡£¬·Ö¸îÍê±Ï
+		dst = src(Rect(range[0], range[1], range[2] - range[0], range[3] - range[1]));//roiæˆªå–ï¼Œåˆ†å‰²å®Œæ¯•
 		
 	}
 	
 }
 
 void spineSegement(Mat &src, vector<Mat> &dst)
-//¼ì²âÊúÖ±Ïß½øĞĞÊé¼¹·Ö¸î£¬·Ö¸îºó½øĞĞĞ£×¼£¬´æÈëÄ¿±êÈİÆ÷ÖĞ
-//ÊäÈëµ¥²ãÊé¼ÜÍ¼ Í¨¹ıreferenceÊä³ö·Ö¸îÈİÆ÷
+//æ£€æµ‹ç«–ç›´çº¿è¿›è¡Œä¹¦è„Šåˆ†å‰²ï¼Œåˆ†å‰²åè¿›è¡Œæ ¡å‡†ï¼Œå­˜å…¥ç›®æ ‡å®¹å™¨ä¸­
+//è¾“å…¥å•å±‚ä¹¦æ¶å›¾ é€šè¿‡referenceè¾“å‡ºåˆ†å‰²å®¹å™¨
 {
 	Mat imgCanny;
-	GaussCanny(src, imgCanny, 7);//¸ßË¹ÂË²¨+canny±ßÔµÌáÈ¡£¬ÂË²¨Æ÷´óĞ¡Size(3,3)
+	GaussCanny(src, imgCanny, 3);//é«˜æ–¯æ»¤æ³¢+cannyè¾¹ç¼˜æå–ï¼Œæ»¤æ³¢å™¨å¤§å°Size(3,3)
 
-	vector<pair<float, float>> vertical_lines;//É¸Ñ¡³öµÄÊúÖ±Ïß
-	lineFilterVer(imgCanny, vertical_lines, 140);//É¸Ñ¡ÊúÖ±Ïß£¬ãĞÖµ110
+	vector<pair<float, float>> vertical_lines;//ç­›é€‰å‡ºçš„ç«–ç›´çº¿
+	lineFilterVer(imgCanny, vertical_lines, 110);//ç­›é€‰ç«–ç›´çº¿ï¼Œé˜ˆå€¼110
 
 	//imshow("canny", imgCanny);
 
-	for (int i = 0; i < vertical_lines.size(); i++)//ĞŞÕı¸ºrhoÖµ
+	for (int i = 0; i < vertical_lines.size(); i++)//ä¿®æ­£è´Ÿrhoå€¼
 	{
 		if (vertical_lines.at(i).second > CV_PI / 2)
 		{
@@ -108,10 +111,10 @@ void spineSegement(Mat &src, vector<Mat> &dst)
 		}
 	}
 
-	sort(vertical_lines.begin(), vertical_lines.end(), paircompare);//°´rhoÅÅĞò
+	sort(vertical_lines.begin(), vertical_lines.end(), paircompare);//æŒ‰rhoæ’åº
 
-	pair<float, float> lastline = vertical_lines.at(0);//ÉÏÌõÏß
-	vector<pair<float, float>> filtVerticalLines;//É¸Ñ¡ÊúÖ±Ïß
+	pair<float, float> lastline = vertical_lines.at(0);//ä¸Šæ¡çº¿
+	vector<pair<float, float>> filtVerticalLines;//ç­›é€‰ç«–ç›´çº¿
 	filtVerticalLines.push_back(vertical_lines.at(0));
 	for (int i = 0;i<vertical_lines.size();i++)
 	{
@@ -126,59 +129,59 @@ void spineSegement(Mat &src, vector<Mat> &dst)
 		lastline = vertical_lines.at(i);
 	}
 
-	//cvtColor(imgCanny, imgCanny, CV_GRAY2BGR);
-	lastline = filtVerticalLines.at(0);//ÉÏÌõÏß
+	cvtColor(imgCanny, imgCanny, CV_GRAY2BGR);
+	lastline = filtVerticalLines.at(0);//ä¸Šæ¡çº¿
 
-	vector<pair<float, float>> edge;//´¹Ö±±ßÔµ£¬·Ö±ğ±íÊ¾×óÓÒ
+	vector<pair<float, float>> edge;//å‚ç›´è¾¹ç¼˜ï¼Œåˆ†åˆ«è¡¨ç¤ºå·¦å³
 	//rho=pair.first theta=pair.second
 	float zero = 0;
 	edge.push_back(make_pair(zero, zero));
-	edge.push_back(make_pair(zero, zero));//ÊÂÏÈ¶¨ºÃ´óĞ¡
+	edge.push_back(make_pair(zero, zero));//äº‹å…ˆå®šå¥½å¤§å°
 
-	float dis = 0, delta = 0;//ÓëÉÏÌõÏß¾àÀëºÍ¼Ğ½Ç
-	int edgeline = 0;//·Ö¸îÊé¼¹±ßÏß¶ÔÊıÁ¿
+	float dis = 0, delta = 0;//ä¸ä¸Šæ¡çº¿è·ç¦»å’Œå¤¹è§’
+	int edgeline = 0;//åˆ†å‰²ä¹¦è„Šè¾¹çº¿å¯¹æ•°é‡
 	int width = src.cols, height = src.rows;
-	int crosspoint[2];//Á½ÌõÏßµÄ½»µã
-	int range[4]{};//·Ö¸î´óĞ¡
-	Mat imagesei;//·Ö¸îºóµÄÊé¼¹(Î´Ğ£×¼)
+	int crosspoint[2];//ä¸¤æ¡çº¿çš„äº¤ç‚¹
+	int range[4]{};//åˆ†å‰²å¤§å°
+	Mat imagesei;//åˆ†å‰²åçš„ä¹¦è„Š(æœªæ ¡å‡†)
 	//char name[10];
-	Mat imageper;//·Ö¸îºóµÄÊé¼¹(Ğ£×¼)
+	Mat imageper;//åˆ†å‰²åçš„ä¹¦è„Š(æ ¡å‡†)
 	for (unsigned int i = 0; i < filtVerticalLines.size(); i++)
 	{
-		//´¹Ö±ÏßµÄrhoÓĞÕı¸º£¬¼ÆËãÔÚÖĞ¼äµÄÍ¶Ó°¾àÀë
+		//å‚ç›´çº¿çš„rhoæœ‰æ­£è´Ÿï¼Œè®¡ç®—åœ¨ä¸­é—´çš„æŠ•å½±è·ç¦»
 		calCross(filtVerticalLines.at(i).first, filtVerticalLines.at(i).second, height/2, CV_PI / 2, crosspoint);
-		dis = crosspoint[0];//ÉÏ±ßÔµ½»µã
+		dis = crosspoint[0];//ä¸Šè¾¹ç¼˜äº¤ç‚¹
 		calCross(lastline.first, lastline.second, height/2, CV_PI / 2, crosspoint);
-		dis = dis - crosspoint[0];//ÁíÒ»¸öÉÏ±ßÔµ½»µã
+		dis = dis - crosspoint[0];//å¦ä¸€ä¸ªä¸Šè¾¹ç¼˜äº¤ç‚¹
 		//dis = filtVerticalLines.at(i).first - lastline.first;
-		if (dis < 0)//±£Ö¤´óÓÚ0
+		if (dis < 0)//ä¿è¯å¤§äº0
 			dis = -dis;
 
-		delta = filtVerticalLines.at(i).second - lastline.second;//½Ç¶È»á³¬¹ı180
-		if (delta > CV_PI / 2)//ĞŞÕıÎª¡À90degÖ®ÄÚ
+		delta = filtVerticalLines.at(i).second - lastline.second;//è§’åº¦ä¼šè¶…è¿‡180
+		if (delta > CV_PI / 2)//ä¿®æ­£ä¸ºÂ±90degä¹‹å†…
 			delta = delta - CV_PI;
 		if (delta < -CV_PI / 2)
 			delta = delta + CV_PI;
 
 		float rho = filtVerticalLines.at(i).first, theta = filtVerticalLines.at(i).second;
-		drawHoughLine(rho, theta, imgCanny);//»æÍ¼ÓÃ
+		drawHoughLine(rho, theta, imgCanny);//ç»˜å›¾ç”¨
 
 		if ((dis > 10 && dis < 90) && (delta > -3* CV_PI / 180 && delta < 3* CV_PI / 180))
-			//¾àÀë¼ä¸ôÔÚÒ»¶¨·¶Î§ÄÚ(5-70pix)Í¬Ê±Æ½ĞĞ¶ÈÁ¼ºÃ£¨¡À2.5deg£©ÈÏÎªÊÇÊé±ßÔµ
+			//è·ç¦»é—´éš”åœ¨ä¸€å®šèŒƒå›´å†…(5-70pix)åŒæ—¶å¹³è¡Œåº¦è‰¯å¥½ï¼ˆÂ±2.5degï¼‰è®¤ä¸ºæ˜¯ä¹¦è¾¹ç¼˜
 		{
 			float rho = filtVerticalLines.at(i).first, theta = filtVerticalLines.at(i).second;
-			drawHoughLine(rho, theta, imgCanny,255,255,0);//»æÍ¼ÓÃ
+			drawHoughLine(rho, theta, imgCanny,255,255,0);//ç»˜å›¾ç”¨
 
 			edge.at(0) = lastline;
 			edge.at(1) = filtVerticalLines.at(i);
 
-			calBorder(width, height, edge, range);//¼ÆËãĞè½ØÈ¡²¿·Ö
+			calBorder(width, height, edge, range);//è®¡ç®—éœ€æˆªå–éƒ¨åˆ†
 			imagesei = src(Rect(range[0], range[1], range[2] - range[0], range[3] - range[1]));
-			//½ØÈ¡Í¼Ïñ£¬ÆäÖĞrange[0]£¬range[1]Îª½ØÈ¡µÄ×ø±êÔ­µã£¬ºóĞ£×¼ÒªÓÃ
+			//æˆªå–å›¾åƒï¼Œå…¶ä¸­range[0]ï¼Œrange[1]ä¸ºæˆªå–çš„åæ ‡åŸç‚¹ï¼Œåæ ¡å‡†è¦ç”¨
 
-			calPerspect(width, height, range[0], range[1], edge, imagesei, imageper);//Í¸ÊÓĞ£×¼¼ÆËã£¬±ä³ÉÕıÊÓÍ¼
+			calPerspect(width, height, range[0], range[1], edge, imagesei, imageper);//é€è§†æ ¡å‡†è®¡ç®—ï¼Œå˜æˆæ­£è§†å›¾
 			//imshow("1", imageper);
-			dst.push_back(imageper.clone());//´æÈëÄ¿±êÈİÆ÷£¬·Ö¸îÊé¼¹½áÊø
+			dst.push_back(imageper.clone());//å­˜å…¥ç›®æ ‡å®¹å™¨ï¼Œåˆ†å‰²ä¹¦è„Šç»“æŸ
 
 			edgeline++;
 		}
@@ -189,107 +192,169 @@ void spineSegement(Mat &src, vector<Mat> &dst)
 }
 
 void drawHoughLine(float rho , float theta , Mat &obj, double R,double G,double B)
-//ÔÚÖ¸¶¨Í¼ÉÏ»­¼«×ø±êÏß
-//ÊäÈërho£¬theta Í¨¹ıÒıÓÃÊä³ö ÊäÈëÑÕÉ«(Ä¬ÈÏºìÉ«)
+//åœ¨æŒ‡å®šå›¾ä¸Šç”»æåæ ‡çº¿
+//è¾“å…¥rhoï¼Œtheta é€šè¿‡å¼•ç”¨è¾“å‡º è¾“å…¥é¢œè‰²(é»˜è®¤çº¢è‰²)
 {
-Point pt1, pt2;//Ëæ±ãÕÒÖ±ÏßÉÏÁ½¸öµã
+Point pt1, pt2;//éšä¾¿æ‰¾ç›´çº¿ä¸Šä¸¤ä¸ªç‚¹
 double a = cos(theta), b = sin(theta);
 double x0 = a*rho, y0 = b*rho;
 pt1.x = cvRound(x0 + 1000 * (-b));
 pt1.y = cvRound(y0 + 1000 * (a));
 pt2.x = cvRound(x0 - 1000 * (-b));
 pt2.y = cvRound(y0 - 1000 * (a));
-line(obj, pt1, pt2, Scalar(B, G, R), 1, CV_AA);//»­Ïß
+line(obj, pt1, pt2, Scalar(B, G, R), 1, CV_AA);//ç”»çº¿
 }
 
 void GaussCanny(Mat &src, Mat &dst,int psize)
-//¸ßË¹ÂË²¨+canny±ßÔµÌáÈ¡
-//ÊäÈëÔ­Í¼¡¢ÒıÓÃÄ¿±ê¡¢¸ßË¹Ä£°å³ß´ç
+//é«˜æ–¯æ»¤æ³¢+cannyè¾¹ç¼˜æå–
+//è¾“å…¥åŸå›¾ã€å¼•ç”¨ç›®æ ‡ã€é«˜æ–¯æ¨¡æ¿å°ºå¯¸
 {
 	Mat imgGaussBlur;
 	GaussianBlur(src, imgGaussBlur, Size(psize, psize), 0, 0);
 	//imshow("Gaussshelve", imgGaussBlur);
-	Canny(imgGaussBlur, dst, 50, 200, 3);//²ÎÊı´ó¶àÊıÇé¿öÏÂ²»ÓÃ¸Ä
+	Canny(imgGaussBlur, dst, 50, 200, 3);//å‚æ•°å¤§å¤šæ•°æƒ…å†µä¸‹ä¸ç”¨æ”¹
 	//imshow("Canny", imgCanny);
 }
 
 void lineFilterHor(Mat &src, vector<pair<float, float>> &horizontal_lines,int threshold)
-//»ô·ò¼ì²âÖ±Ïß£¬É¸Ñ¡Ë®Æ½Ïß
-//ÊäÈë±ßÔµÍ¼(gray) Êä³öÄ¿±êÈİÆ÷ ÊäÈëãĞÖµ
+//éœå¤«æ£€æµ‹ç›´çº¿ï¼Œç­›é€‰æ°´å¹³çº¿
+//è¾“å…¥è¾¹ç¼˜å›¾(gray) è¾“å‡ºç›®æ ‡å®¹å™¨ è¾“å…¥é˜ˆå€¼
 {
-	vector<Vec2f> lines;//»ô·òÖ±Ïß¼ì²â 
-	HoughLines(src, lines, 1, CV_PI / 180, threshold, 0, 0);//threshold=150
-	//cout << "find " << lines.size() << " lines\n";
-	
+	//vector<Vec2f> lines;//éœå¤«ç›´çº¿æ£€æµ‹ 
+	//HoughLines(src, lines, 1, CV_PI / 180, threshold, 0, 0);//threshold=150
+	////cout << "find " << lines.size() << " lines\n";
+
 	//cvtColor(src, src, CV_GRAY2BGR);
-	//vector<pair<float, float>> horizontal_lines;//É¸Ñ¡ÏßÊı×é
+	//pair<float, float> linepair;
+	////rho=pair.first theta=pair.second
+	//for (size_t i = 0; i < lines.size(); i++)
+	//{
+	//	float rho = lines[i][0], theta = lines[i][1];
+	//	if ((theta<100 * CV_PI / 180 && theta>80 * CV_PI / 180))//è¿‘ä¼¼æ°´å¹³ï¼Œ80deg<theta<100deg
+	//	{
+	//		linepair = make_pair(rho, theta);
+	//		horizontal_lines.push_back(linepair);//è®°å½•çº¿
+	//		drawHoughLine(rho, theta, src);//ç”»çº¿ç”¨
+	//	}
+	//}
+	//cout << "filter HorLine " << horizontal_lines.size() << " lines\n";
+
+	vector<Vec4i> lines;
+	HoughLinesP(src, lines, 1, CV_PI / 180, threshold, 70, 5);
+	//cvtColor(src, src, CV_GRAY2BGR);
 	pair<float, float> linepair;
 	//rho=pair.first theta=pair.second
 	for (size_t i = 0; i < lines.size(); i++)
 	{
-		float rho = lines[i][0], theta = lines[i][1];
-		if ((theta<100 * CV_PI / 180 && theta>80 * CV_PI / 180))//½üËÆË®Æ½£¬80deg<theta<100deg
+		double A=0, B=0, C=0;//Ax+By+C=0
+		A = lines[i][3] - lines[i][1];//A=y2-y1
+		B = lines[i][0] - lines[i][2];//B=x1-x2
+		C = lines[i][2] * lines[i][1] - lines[i][0] * lines[i][3];//C=x2*y1-x1*y2
+		float rho = fabs(C) / sqrt(A*A + B*B);
+		float theta = atan2(lines[i][0]- lines[i][2] ,lines[i][3]- lines[i][1]);
+
+		if (theta < 0)
+		{
+			theta = theta + CV_PI;
+		}
+		if ((theta < 100 * CV_PI / 180 && theta>80 * CV_PI / 180))//è¿‘ä¼¼æ°´å¹³ï¼Œ80deg<theta<100deg
 		{
 			linepair = make_pair(rho, theta);
-			horizontal_lines.push_back(linepair);//¼ÇÂ¼Ïß
-			//drawHoughLine(rho, theta, src);//»­ÏßÓÃ
+			horizontal_lines.push_back(linepair);//è®°å½•çº¿
+			//drawHoughLine(rho, theta, src);//ç”»çº¿ç”¨
+			//line(src, Point(lines[i][0], lines[i][1]),Point(lines[i][2], lines[i][3]), Scalar(0, 255, 0),1,8);
 		}
 	}
 	cout << "filter HorLine " << horizontal_lines.size() << " lines\n";
 }
 
 void lineFilterVer(Mat &src, vector<pair<float, float>> &vertical_lines, int threshold)
-//»ô·ò¼ì²âÖ±Ïß£¬É¸Ñ¡´¹Ö±Ïß
-//ÊäÈë±ßÔµÍ¼(gray) Êä³öÄ¿±êÈİÆ÷ ÊäÈëãĞÖµ
+//éœå¤«æ£€æµ‹ç›´çº¿ï¼Œç­›é€‰å‚ç›´çº¿
+//è¾“å…¥è¾¹ç¼˜å›¾(gray) è¾“å‡ºç›®æ ‡å®¹å™¨ è¾“å…¥é˜ˆå€¼
 {
-	vector<Vec2f> lines;//»ô·òÖ±Ïß¼ì²â 
-	HoughLines(src, lines, 1, CV_PI / 180, threshold, 0, 0);//threshold=110 ´¹Ö±Ïß¶ÌÒ»Ğ©
-	//cout << "find " << lines.size() << " lines\n";
+	//vector<Vec2f> lines;//éœå¤«ç›´çº¿æ£€æµ‹ 
+	//HoughLines(src, lines, 1, CV_PI / 180, threshold, 0, 0);//threshold=110 å‚ç›´çº¿çŸ­ä¸€äº›
+	////cout << "find " << lines.size() << " lines\n";
 
-	cvtColor(src, src, CV_GRAY2BGR);
+	//cvtColor(src, src, CV_GRAY2BGR);
+
+	//pair<float, float> linepair;
+	//for (size_t i = 0; i < lines.size(); i++)
+	//{
+	//	float rho = lines[i][0], theta = lines[i][1];
+	//	if ((theta<10 * CV_PI / 180 || theta>170 * CV_PI / 180))//è¿‘ä¼¼å‚ç›´theta<10deg || theta>170deg
+	//	{
+	//		linepair = make_pair(rho, theta);
+	//		vertical_lines.push_back(linepair);//è®°å½•çº¿
+	//		drawHoughLine(rho, theta, src,255,150,100);
+	//	}
+	//}
+	//cout << "filter VerLine " << vertical_lines.size() << " lines\n";
+	////imshow("vl", src);
+
+	vector<Vec4i> lines;
+	HoughLinesP(src, lines, 1, CV_PI / 180, threshold, 110, 7);
+
+	//cvtColor(src, src, CV_GRAY2BGR);
 
 	pair<float, float> linepair;
 	for (size_t i = 0; i < lines.size(); i++)
 	{
-		float rho = lines[i][0], theta = lines[i][1];
-		if ((theta<10 * CV_PI / 180 || theta>170 * CV_PI / 180))//½üËÆ´¹Ö±theta<10deg || theta>170deg
+		double A = 0, B = 0, C = 0;//Ax+By+C=0
+		A = lines[i][3] - lines[i][1];//A=y2-y1
+		B = lines[i][0] - lines[i][2];//B=x1-x2
+		C = lines[i][2] * lines[i][1] - lines[i][0] * lines[i][3];//C=x2*y1-x1*y2
+		float rho = C / sqrt(A*A + B*B);
+		float theta = atan2(lines[i][0] - lines[i][2], lines[i][3] - lines[i][1]);
+
+		if (theta < 0)
+		{
+			theta = theta + CV_PI;
+		}
+
+		if (theta > CV_PI)
+		{
+			rho = -rho;
+		}
+
+		if ((theta<10 * CV_PI / 180 || theta>170 * CV_PI / 180))//è¿‘ä¼¼å‚ç›´theta<10deg || theta>170deg
 		{
 			linepair = make_pair(rho, theta);
-			vertical_lines.push_back(linepair);//¼ÇÂ¼Ïß
-			drawHoughLine(rho, theta, src,255,150,100);
+			vertical_lines.push_back(linepair);//è®°å½•çº¿
+			//drawHoughLine(rho, theta, src, 255, 150, 100);
+			//line(src, Point(lines[i][0], lines[i][1]), Point(lines[i][2], lines[i][3]), Scalar(0, 255, 0), 1, 8);
 		}
 	}
 	cout << "filter VerLine " << vertical_lines.size() << " lines\n";
-	//imshow("vl", src);
 }
 
 void calCross(double rho1, double theta1, double rho2, double theta2, int* crosspoint)
-//¼ÆËãÁ½Ö±Ïß½»µã
-//ÊäÈëÁ½Ö±Ïß¼«×ø±ê²ÎÊı Êä³öÔÚcrosspointÊı×éÖĞ£¬[1]Îªx£¬[2]Îªy
+//è®¡ç®—ä¸¤ç›´çº¿äº¤ç‚¹
+//è¾“å…¥ä¸¤ç›´çº¿æåæ ‡å‚æ•° è¾“å‡ºåœ¨crosspointæ•°ç»„ä¸­ï¼Œ[1]ä¸ºxï¼Œ[2]ä¸ºy
 {
 	if (theta1 == theta2)
 	{
 		crosspoint[0] = -1;
 		crosspoint[1] = -1;
-		return;//Æ½ĞĞÏßÊä³ö(-1,-1)²»Ó°Ïì
+		return;//å¹³è¡Œçº¿è¾“å‡º(-1,-1)ä¸å½±å“
 	}
 	else
 	{
 		double det = cos(theta1)*sin(theta2) - cos(theta2)*sin(theta1);
 		crosspoint[0] = static_cast <int>(round((sin(theta2)*rho1 - sin(theta1)*rho2) / det));
 		crosspoint[1] = static_cast <int>(round((-cos(theta2)*rho1 + cos(theta1)*rho2) / det));
-		return;//¼ÆËã½»µã
+		return;//è®¡ç®—äº¤ç‚¹
 	}
 }
 
 
 void calBorder(int width,int height, vector<pair<float, float>> &edge,int* range)
-//¼ÆËã½ØÈ¡±ß½ç£¬ÇóÁ½ÌõÄ¿±êÖ±ÏßÓëËÄ±ßÏßµÄ½»µã£¬È¡ÄÜÍêÈ«°üº¬Á½Ö±ÏßµÄ·¶Î§
-//ÊäÈëÍ¼Ïñ¿í¸ß ÊäÈëÁ½Ö±Ïß Êä³ö·¶Î§µÄ¶Ô½ÇÁ½µã(x0,y0,x1,y1)
+//è®¡ç®—æˆªå–è¾¹ç•Œï¼Œæ±‚ä¸¤æ¡ç›®æ ‡ç›´çº¿ä¸å››è¾¹çº¿çš„äº¤ç‚¹ï¼Œå–èƒ½å®Œå…¨åŒ…å«ä¸¤ç›´çº¿çš„èŒƒå›´
+//è¾“å…¥å›¾åƒå®½é«˜ è¾“å…¥ä¸¤ç›´çº¿ è¾“å‡ºèŒƒå›´çš„å¯¹è§’ä¸¤ç‚¹(x0,y0,x1,y1)
 {
 	int crosspoint[2];
-	vector<pair<float, float>> border;//È·¶¨±ß½ç
-	int minx = width, miny = height, maxx = 0, maxy = 0;//´æ·¶Î§£¬Ä¬ÈÏ×î´ó
+	vector<pair<float, float>> border;//ç¡®å®šè¾¹ç•Œ
+	int minx = width, miny = height, maxx = 0, maxy = 0;//å­˜èŒƒå›´ï¼Œé»˜è®¤æœ€å¤§
 	border.push_back(make_pair(0, 0));
 	border.push_back(make_pair(0, CV_PI / 2));
 	border.push_back(make_pair(width, 0));
@@ -299,8 +364,8 @@ void calBorder(int width,int height, vector<pair<float, float>> &edge,int* range
 		for (int i = 0; i < 4; i++)
 		{
 			calCross(edge.at(j).first, edge.at(j).second, border.at(i).first, border.at(i).second, crosspoint);
-			//Çó½»µã
-			if (!(crosspoint[0]<0 || crosspoint[1]<0 || crosspoint[0]>width || crosspoint[1]>height))//³¬³öÍ¼Ïñ²»¿¼ÂÇ
+			//æ±‚äº¤ç‚¹
+			if (!(crosspoint[0]<0 || crosspoint[1]<0 || crosspoint[0]>width || crosspoint[1]>height))//è¶…å‡ºå›¾åƒä¸è€ƒè™‘
 			{
 				if (crosspoint[0] < minx)
 					minx = crosspoint[0];
@@ -320,13 +385,13 @@ void calBorder(int width,int height, vector<pair<float, float>> &edge,int* range
 }
 
 void calPerspect(int width, int height,int orix, int oriy, vector<pair<float, float>> &edge, Mat& src,Mat& dst)
-//¼ÆËãÍ¸ÊÓĞ£×¼
-//ÊäÈëÊé¼Ü²ãÍ¼¿í¸ß£¬ÊäÈë½ØÈ¡Êé±¾Ô­µã£¬ÊäÈëÁ½Ìõ±ß½ç£¬Êé¼Ü²ãÍ¼Ïñ Êä³öÊé¼¹Í¼  
+//è®¡ç®—é€è§†æ ¡å‡†
+//è¾“å…¥ä¹¦æ¶å±‚å›¾å®½é«˜ï¼Œè¾“å…¥æˆªå–ä¹¦æœ¬åŸç‚¹ï¼Œè¾“å…¥ä¸¤æ¡è¾¹ç•Œï¼Œä¹¦æ¶å±‚å›¾åƒ è¾“å‡ºä¹¦è„Šå›¾  
 {
 	int crosspoint[2];
 	vector<pair<float, float>> border;
-	Point2f srcTri[4], dstTri[4];//ËÄ¶ÔÆ¥Åäµã
-	border.push_back(make_pair(0, CV_PI / 2));//ÉÏÏÂ±ß
+	Point2f srcTri[4], dstTri[4];//å››å¯¹åŒ¹é…ç‚¹
+	border.push_back(make_pair(0, CV_PI / 2));//ä¸Šä¸‹è¾¹
 	border.push_back(make_pair(height, CV_PI / 2));
 	for (int j = 0; j < 2; j++)
 	{
@@ -337,7 +402,7 @@ void calPerspect(int width, int height,int orix, int oriy, vector<pair<float, fl
 			{
 				srcTri[i + j * 2].x = crosspoint[0]-orix;//0 2
 				srcTri[i + j * 2].y = crosspoint[1]-oriy;//1 3
-				//ÀíÏë×´¿öÏÂ0Î»ÓÚ×óÉÏ£¬1×óÏÂ£¬2ÓÒÉÏ£¬3ÓÒÏÂ
+				//ç†æƒ³çŠ¶å†µä¸‹0ä½äºå·¦ä¸Šï¼Œ1å·¦ä¸‹ï¼Œ2å³ä¸Šï¼Œ3å³ä¸‹
 			}
 
 		}
@@ -345,14 +410,14 @@ void calPerspect(int width, int height,int orix, int oriy, vector<pair<float, fl
 	int dstWidth = 0, dstHeight = 0;
 	if (srcTri[0].x > srcTri[2].x)
 	{
-		//Æ¥Åäµ½ÀíÏëÇé¿ö
-		//·Ö±ğ½»»»0 2,1 3
+		//åŒ¹é…åˆ°ç†æƒ³æƒ…å†µ
+		//åˆ†åˆ«äº¤æ¢0 2,1 3
 		Point2f temp;
 		temp = srcTri[0];		srcTri[0] = srcTri[2];		srcTri[2] = temp;
 		temp = srcTri[1];		srcTri[1] = srcTri[3];		srcTri[3] = temp;
 	}
 
-	if((srcTri[2].x - srcTri[0].x)>(srcTri[3].x - srcTri[1].x))//Ä¿±ê¿í¸ßÈ¡Ô­Î»ÖÃµÄ¿í¸ßÖĞ½Ï´óµÄ
+	if((srcTri[2].x - srcTri[0].x)>(srcTri[3].x - srcTri[1].x))//ç›®æ ‡å®½é«˜å–åŸä½ç½®çš„å®½é«˜ä¸­è¾ƒå¤§çš„
 		dstWidth = srcTri[2].x - srcTri[0].x;
 	else
 		dstWidth = srcTri[3].x - srcTri[1].x;
@@ -361,13 +426,13 @@ void calPerspect(int width, int height,int orix, int oriy, vector<pair<float, fl
 	else
 		dstHeight = srcTri[3].y - srcTri[2].y;
 
-	dstTri[0].x = 0; dstTri[0].y = 0;//¶ÔÓ¦srctriÖĞµÄÎ»ÖÃ
+	dstTri[0].x = 0; dstTri[0].y = 0;//å¯¹åº”srctriä¸­çš„ä½ç½®
 	dstTri[1].x = 0; dstTri[1].y = dstHeight;
 	dstTri[2].x = dstWidth; dstTri[2].y = 0;
 	dstTri[3].x = dstWidth; dstTri[3].y = dstHeight;
 	Mat warp_mat;
 	warp_mat = Mat::zeros(3, 3, CV_32FC2);
-	warp_mat=getPerspectiveTransform(srcTri, dstTri);//¼ÆËã±ä»»¾ØÕó
-	warpPerspective(src, dst, warp_mat, Size(dstWidth, dstHeight));//½ØÈ¡±ä»»Í¼²¢Êä³ö
+	warp_mat=getPerspectiveTransform(srcTri, dstTri);//è®¡ç®—å˜æ¢çŸ©é˜µ
+	warpPerspective(src, dst, warp_mat, Size(dstWidth, dstHeight));//æˆªå–å˜æ¢å›¾å¹¶è¾“å‡º
 }
 

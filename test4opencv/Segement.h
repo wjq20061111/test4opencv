@@ -1,4 +1,4 @@
-#ifndef SEGEMENT_H
+﻿#ifndef SEGEMENT_H
 #define SEGEMENT_H
 
 #include <vector>

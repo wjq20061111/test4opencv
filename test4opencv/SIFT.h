@@ -1,5 +1,5 @@
-#ifndef SIFTRANSAC_H
-#define SIFTRANSAC_H
+﻿#ifndef SIFT_H
+#define SIFT_H
 
 
 #include "opencv2/core/core.hpp"  
@@ -14,7 +14,5 @@ using namespace cv;
 using namespace std;
 
 void SIFTCompare(Mat& src,Mat& target);
-void mRANSAC(Mat& src, Mat& target, vector<DMatch>& mathces, vector<KeyPoint>& keypoints_1, vector<KeyPoint>& keypoints_2);
 
-
-#endif // !SIFTRANSAC_H
+#endif // !SIFT_H

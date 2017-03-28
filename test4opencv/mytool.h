@@ -1,4 +1,4 @@
-#ifndef MYTOOL_H
+﻿#ifndef MYTOOL_H
 #define MYTOOL_H
 
 #include <iostream>
